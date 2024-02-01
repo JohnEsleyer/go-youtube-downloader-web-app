@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 	"github.com/kkdai/youtube/v2"
 )
 
@@ -86,7 +88,17 @@ func extractVideoID(url string) string {
 }
 
 func main() {
-	http.HandleFunc("/download", downloadYouTubeVideo)
+	router := mux.NewRouter()
+
+	// Enable CORS
+	headersOk := handlers.AllowedHeaders([]string{"Content-Type", "Origin", "Accept"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+
+	// Route for handling download requests
+	router.HandleFunc("/download", downloadYouTubeVideo).Methods("POST")
+
+	// Start server with CORS support
 	fmt.Println("Server is running on :8080")
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", handlers.CORS(headersOk, originsOk, methodsOk)(router))
 }
