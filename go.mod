@@ -1,8 +1,6 @@
-module youtube_downloader
+module youtube_go_downloader
 
-go 1.21
-
-toolchain go1.21.6
+go 1.21.6
 
 require (
 	github.com/bitly/go-simplejson v0.5.1 // indirect
