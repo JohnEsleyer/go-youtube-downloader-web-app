@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gorilla/handlers"
@@ -56,27 +55,20 @@ func downloadYouTubeVideo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer stream.Close()
 
-	// Create and write to the video file
-	file, err := os.Create("video.mp4")
-	if err != nil {
-		http.Error(w, "Error creating video file", http.StatusInternalServerError)
-		fmt.Println("Error: Creating video file")
-		return
-	}
-	defer file.Close()
+	// Set response headers
+	w.Header().Set("Content-Type", "video/mp4")
+	w.Header().Set("Content-Disposition", "attachment; filename=video.mp4")
 
-	_, err = io.Copy(file, stream)
+	// Copy video stream to response
+	_, err = io.Copy(w, stream)
 	if err != nil {
-		http.Error(w, "Error copying video stream to file", http.StatusInternalServerError)
-		fmt.Println("Error: Copying video stream to file")
+		http.Error(w, "Error copying video stream to response", http.StatusInternalServerError)
+		fmt.Println("Error: Copying video stream to response")
 		return
 	}
 
 	// Print success status
-	fmt.Printf("Video downloaded successfully from %s\n", r.RemoteAddr)
-
-	// Send response to the client
-	fmt.Fprintf(w, "Video downloaded successfully")
+	fmt.Printf("Video served successfully to %s\n", r.RemoteAddr)
 }
 
 func extractVideoID(url string) string {
